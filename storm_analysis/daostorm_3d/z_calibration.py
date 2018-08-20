@@ -11,10 +11,14 @@ FIXME: Add tilt compensation as in zee-calibrator?
 
 Hazen 01/18
 """
+import sys
+sys.path.append('../../')
+
 import copy
 import matplotlib
 import matplotlib.pyplot as pyplot
 import numpy
+import pandas as pd
 import scipy
 import scipy.optimize
 
@@ -22,25 +26,32 @@ from xml.dom import minidom
 from xml.etree import ElementTree
 
 import storm_analysis
-import storm_analysis.sa_library.sa_h5py as saH5Py
+#import storm_analysis.sa_library.sa_h5py as saH5Py
 
 
 class ZCalibrationException(Exception):
     pass
 
 
-def calibrate(hdf5, zoffsets, fit_order, outliers, no_plots = False):
+def calibrate(csv_in, fit_order, outliers, no_plots = False):
     """
     Run all the steps in Z calibration in a single step.
 
-    hdf5 - The HDF5 file.
-    zoffsets - Text file containing z offsets.
+    csv_in - The csv file.
     fit_order - An integer in the range 0-4.
     outliers - Sigma threshold for removing outliers in Wx, Wy.
     """
         
     # Load the data.
-    [wx, wy, z, pixel_size] = loadWxWyZData(hdf5, zoffsets)
+ #   [wx, wy, z, pixel_size] = loadWxWyZData(hdf5, zoffsets)
+    dataFrame = pd.read_csv(csv_in)
+    wx = dataFrame['sigmaX']
+    wy = dataFrame['sigmaY']
+    z = dataFrame['FrameNumber']
+    #[wx, wy, z] = dataFrame['sigmaX', 'sigmaY', 'FrameNumber']
+    pixel_size = 117
+    # We use 20 nm steps in the calibration
+    z *= 0.02 
 
     # Fit curves.
     print("Fitting (round 1).")
@@ -181,6 +192,7 @@ def loadWxWyZData(h5_name, zfile_name):
     z = None
     with saH5Py.SAH5Py(h5_name) as h5:
         pixel_size = h5.getPixelSize()
+        pixel_size = 117
         for curf, locs in h5.localizationsIterator(fields = ["xsigma", "ysigma"]):
             if (int(z_data[curf,0]) == 0):
                 continue
@@ -349,10 +361,10 @@ if (__name__ == "__main__"):
 
     parser = argparse.ArgumentParser(description = 'Fit for defocusing curve parameters.')
 
-    parser.add_argument('--bin', dest='hdf5', type=str, required=True,
-                        help = "The name of the localizations HDF5 file.")
-    parser.add_argument('--zoffsets', dest='zoffsets', type=str, required=True,
-                        help = "A text file with two space separated numbers on each line, the first is 1 of the frame is valid, 0 otherwise and the second is the z offset of the frame relative to the focal plane in microns.")
+    parser.add_argument('--bin', dest='csv_in', type=str, required=True,
+                        help = "The name of the localizations csv file.")
+    #parser.add_argument('--zoffsets', dest='zoffsets', type=str, required=True,
+    #                    help = "A text file with two space separated numbers on each line, the first is 1 of the frame is valid, 0 otherwise and the second is the z offset of the frame relative to the focal plane in microns.")
     parser.add_argument('--fit_order', dest='fit_order', type=int, required=False, default=2,
                         help = "The number of additional terms to include in the fit (A,B,C,D). Must be in the range 0 to 4.")
     parser.add_argument('--no_plots', dest='no_plots', type=bool, required=False, default=False,
@@ -362,5 +374,5 @@ if (__name__ == "__main__"):
 
     args = parser.parse_args()    
 
-    calibrate(args.hdf5, args.zoffsets, args.fit_order, args.outliers, args.no_plots)
+    calibrate(args.csv_in, args.fit_order, args.outliers, args.no_plots)
    
