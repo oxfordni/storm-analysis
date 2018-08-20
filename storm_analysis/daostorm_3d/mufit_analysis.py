@@ -34,6 +34,7 @@ def analyze(movie_name, mlist_name, settings_name):
                                           parameters = parameters)
 
     # Create localization file writer.
+    # make hdf5 a csv
     data_writer = analysisIO.DataWriterHDF5(data_file = mlist_name,
                                             parameters = parameters,
                                             sa_type = '3D-DAOSTORM')
