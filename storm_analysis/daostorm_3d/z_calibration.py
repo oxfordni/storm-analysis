@@ -26,6 +26,7 @@ from xml.dom import minidom
 from xml.etree import ElementTree
 
 import storm_analysis
+
 #import storm_analysis.sa_library.sa_h5py as saH5Py
 
 
@@ -72,6 +73,9 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
 
     # Print results.
     prettyPrint(wx_params, wy_params, pixel_size)
+
+    numpy.save('wx_params_out.npy', wx_params)
+    numpy.save('wy_params_out.npy', wy_params)
 
     return [wx_params, wy_params]
 
