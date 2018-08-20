@@ -52,7 +52,8 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
     pixel_size = 117
     # We use 20 nm steps in the calibration
     z *= 0.02 
-
+    z = z - 0.5 * numpy.max(z)
+    zrange = (numpy.abs(numpy.min(z)) + numpy.abs(numpy.max(z))) / 2.0
     # Fit curves.
     print("Fitting (round 1).")
     [wx_params, wy_params] = fitDefocusingCurves(wx, wy, z, n_additional = fit_order)
@@ -67,7 +68,7 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
 
     # Plot fit.
     if not no_plots:
-        plotFit(wx, wy, z, t_wx, t_wy, t_z, wx_params, wy_params)
+        plotFit(wx, wy, z, t_wx, t_wy, t_z, wx_params, wy_params, zrange)
 
     # Print results.
     prettyPrint(wx_params, wy_params, pixel_size)
