@@ -66,7 +66,7 @@ def fitz(h5_name, cutoff, wx_params, wy_params, z_min, z_max, z_step = 0.001):
     fitzTracks(h5_name, cutoff, wx_params, wy_params, z_min, z_max, z_step)
     
 
-def fitzRaw(h5_name, cutoff, wx_params, wy_params, z_min, z_max, z_step):
+def fitzRaw(csv_in, cutoff, wx_params, wy_params, z_min, z_max, z_step):
     """
     This processes the raw localizations.
 
@@ -80,17 +80,25 @@ def fitzRaw(h5_name, cutoff, wx_params, wy_params, z_min, z_max, z_step):
                                   z_step * 1000.0,
                                   cutoff)
 
-    # Fit raw localizations & save z value (in microns).
-    with saH5Py.SAH5Py(h5_name) as h5:
-        pixel_size = h5.getPixelSize()
-        for fnum, locs in h5.localizationsIterator():
-            z_vals = numpy.zeros(locs["xsigma"].size, dtype = numpy.float64)
-            for i in range(locs["xsigma"].size):
-                wx = pixel_size * 2.0 * locs["xsigma"][i]
-                wy = pixel_size * 2.0 * locs["ysigma"][i]
-                z_vals[i] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
-            h5.addLocalizationZ(z_vals, fnum)
+    #z = dataFrame['FrameNumber']
+    pizel_size = 117
 
+    # Fit raw localizations & save z value (in microns).
+    #with saH5Py.SAH5Py(h5_name) as h5:
+        #pixel_size = h5.getPixelSize()
+    
+    for index, row in dataFrame.iterrows():
+        #print row['c1'], row['c2']
+        z_vals = numpy.zeros(row["sigmaX"].size, dtype = numpy.float64)
+        #for fnum, locs in h5.localizationsIterator():
+         #   z_vals = numpy.zeros(locs["xsigma"].size, dtype = numpy.float64)
+        #for i in range(row["SigmaX"].size):
+        wx = pixel_size * 2.0 * row["sigmaX"]
+        wy = pixel_size * 2.0 * row["sigmaY"]
+        z_vals[index] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
+    dataFrame['z'] = z_vals
+     #   dataFrame.append(z_vals)
+    dataFrame.to_csv('calibrated_zpositions.csv')
     c_fitz.cleanup(zfit_data)
 
 
@@ -132,22 +140,29 @@ if (__name__ == "__main__"):
 
     parser = argparse.ArgumentParser(description = 'Z fitting given Wx, Wy calibration curves.')
 
-    parser.add_argument('--bin', dest='mlist', type=str, required=True,
+    parser.add_argument('--bin', dest='csv_in', type=str, required=True,
                         help = "The name of the localizations file.")
-    parser.add_argument('--xml', dest='settings', type=str, required=True,
-                        help = "The name of the settings xml file.")
+    #parser.add_argument('--xml', dest='settings', type=str, required=True,
+     #                   help = "The name of the settings xml file.")
 
     args = parser.parse_args()
 
-    parameters = params.ParametersDAO().initFromFile(args.settings)
+    #parameters = params.ParametersDAO().initFromFile(args.settings)
 
-    [wx_params, wy_params] = parameters.getWidthParams()
-    [min_z, max_z] = parameters.getZRange()
-        
-    fitz(args.mlist,
-         parameters.getAttr("cutoff"),
+    dataFrame = pd.read_csv(csv_in)
+
+    numpy.load(wx_params_out.npy)
+    numpy.load(wy_params_out.npy)
+    min_z = (dataFrame['FrameNumber'] * 0.02) - 0.5
+    max_z = (dataFrame['FrameNumber'] * 0.02) + 0.5
+
+  #  [wx_params, wy_params] = parameters.getWidthParams()
+  #  [min_z, max_z] = parameters.getZRange()
+     
+    fitzRaw(args.csv_in,
+         (2 * max_z),
          wx_params,
          wy_params,
          min_z,
          max_z,
-         parameters.getAttr("z_step", 0.001))
+         0.02)
