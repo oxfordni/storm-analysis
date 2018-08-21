@@ -4,6 +4,9 @@ Performs "standard" analysis on a SMLM movie given parameters.
 
 Hazen 1/18
 """
+import sys
+sys.path.append('../../')
+
 import numpy
 import os
 
