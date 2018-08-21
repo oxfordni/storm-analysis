@@ -23,8 +23,8 @@ class Parameters(object):
     """
     Base parameters class.
     """
-    def __init__(self, **kwds):
-        super(Parameters, self).__init__(**kwds)
+    def __init__(self, **kwds)
+:        super(Parameters, self).__init__(**kwds)
 
         # This dictionary will contain all of the valid analysis parameters.
         # The format is "key" : [type, value].
@@ -307,7 +307,7 @@ class ParametersCommon(Parameters):
         """
         Get z range.
         """
-        return [self.getAttr("min_z", -0.5), self.getAttr("max_z", 0.5)]
+        return [self.getAttr("min_z", -0.7), self.getAttr("max_z", 0.7)]
 
 
 class ParametersFitters(ParametersCommon):
