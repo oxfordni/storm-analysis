@@ -48,7 +48,7 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
     dataFrame = pd.read_csv(csv_in)
     wx = dataFrame['sigmaX']
     wy = dataFrame['sigmaY']
-    z = dataFrame['FrameNumber']
+    z = dataFrame['Frames']
     #[wx, wy, z] = dataFrame['sigmaX', 'sigmaY', 'FrameNumber']
     pixel_size = 117
     # We use 20 nm steps in the calibration
