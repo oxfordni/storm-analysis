@@ -103,12 +103,11 @@ def fitzRaw(csv_in, cutoff, wx_params, wy_params, z_min, z_max, z_step):
         #for i in range(row["SigmaX"].size):
         wx = pixel_size * 2.0 * dataFrame["PSF Sigma X (pix)"][index]
         wy = pixel_size * 2.0 * dataFrame["PSF Sigma Y (pix)"][index]
-        #print("Index: ", index)
-        #print("wx: ", wx)
-        #print("wy: ", wy)
-        #z_vals[index] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
+        print("Index: ", index)
+        print("wx: ", wx)
+        print("wy: ", wy)
         z_vals[index] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
-        #print("z_vals: ", z_vals[index])
+        print("z_vals: ", z_vals[index])
     dataFrame['z'] = z_vals
      #   dataFrame.append(z_vals)
     dataFrame.to_csv('calibrated_zpositions.csv')
@@ -160,17 +159,24 @@ if (__name__ == "__main__"):
 
     args = parser.parse_args()
 
-    #parameters = params.ParametersDAO().initFromFile(args.settings)
+   # parameters = params.ParametersDAO().initFromFile(args.settings)
 
     dataFrame = pd.read_csv(args.csv_in)
 
     wx_params = numpy.load('../daostorm_3d/wx_params_out.npy')
     wy_params = numpy.load('../daostorm_3d/wy_params_out.npy')
-    min_z = ((dataFrame['Frame'].max() * 0.02) - 0.5)
-    max_z = ((dataFrame['Frame'].max() * 0.02) + 0.5)
-    z_step = 0.001
+    #min_z = ((dataFrame['Frame'].min() / 1000))
+    #max_z = ((dataFrame['Frame'].max() / 1000))
+    min_z = -0.7
+    max_z = 0.7
+
+    #print("z_min: ", min_z)
+    #print("z_max: ", max_z)
+    z_step = 0.02
   #  [wx_params, wy_params] = parameters.getWidthParams()
-  #  [min_z, max_z] = parameters.getZRange()
+   # [min_z, max_z] = parameters.getZRange()
+    print("min_z: ", min_z)
+    print("max_z: ", max_z)
     print("initializing fitzRaw") 
     fitzRaw(args.csv_in,
          (2 * max_z),
