@@ -10,13 +10,17 @@ update your calibration parameters.
 
 Hazen 1/18
 """
+import sys
+sys.path.append('../../')
+
 import ctypes
 import numpy
 from numpy.ctypeslib import ndpointer
 import os
+import pandas as pd
 
 import storm_analysis.sa_library.loadclib as loadclib
-import storm_analysis.sa_library.sa_h5py as saH5Py
+#import storm_analysis.sa_library.sa_h5py as saH5Py
 
 c_fitz = loadclib.loadCLibrary("storm_analysis.sa_utilities", "fitz")
 
@@ -149,13 +153,13 @@ if (__name__ == "__main__"):
 
     #parameters = params.ParametersDAO().initFromFile(args.settings)
 
-    dataFrame = pd.read_csv(csv_in)
+    dataFrame = pd.read_csv(args.csv_in)
 
-    numpy.load(wx_params_out.npy)
-    numpy.load(wy_params_out.npy)
-    min_z = (dataFrame['FrameNumber'] * 0.02) - 0.5
-    max_z = (dataFrame['FrameNumber'] * 0.02) + 0.5
-
+    wx_params = numpy.load('../daostorm_3d/wx_params_out.npy')
+    wy_params = numpy.load('../daostorm_3d/wy_params_out.npy')
+    min_z = ((dataFrame['Frame'] * 0.02) - 0.5)
+    max_z = ((dataFrame['Frame'] * 0.02) + 0.5)
+    z_step = 0.02
   #  [wx_params, wy_params] = parameters.getWidthParams()
   #  [min_z, max_z] = parameters.getZRange()
      
@@ -165,4 +169,4 @@ if (__name__ == "__main__"):
          wy_params,
          min_z,
          max_z,
-         0.02)
+         z_step)
