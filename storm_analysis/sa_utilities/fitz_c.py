@@ -77,29 +77,38 @@ def fitzRaw(csv_in, cutoff, wx_params, wy_params, z_min, z_max, z_step):
     Note: Localizations whose wx/wy values are too far from the calibration
           curve will be given a z value that is less than z_min.
     """
+    print("Starting fitzRaw")
     zfit_data = c_fitz.initialize(numpy.ascontiguousarray(wx_params),
                                   numpy.ascontiguousarray(wy_params),
                                   z_min * 1000.0,
                                   z_max * 1000.0,
                                   z_step * 1000.0,
                                   cutoff)
-
+    print("zfit_data", zfit_data)
     #z = dataFrame['FrameNumber']
-    pizel_size = 117
+    pixel_size = 117
 
     # Fit raw localizations & save z value (in microns).
     #with saH5Py.SAH5Py(h5_name) as h5:
         #pixel_size = h5.getPixelSize()
-    
-    for index, row in dataFrame.iterrows():
+    total_rows = dataFrame.shape
+    #print(total_rows)
+
+    z_vals = numpy.zeros([total_rows[0], ])
+    for index in range(0, total_rows[0]):
+        
         #print row['c1'], row['c2']
-        z_vals = numpy.zeros(row["sigmaX"].size, dtype = numpy.float64)
         #for fnum, locs in h5.localizationsIterator():
          #   z_vals = numpy.zeros(locs["xsigma"].size, dtype = numpy.float64)
         #for i in range(row["SigmaX"].size):
-        wx = pixel_size * 2.0 * row["sigmaX"]
-        wy = pixel_size * 2.0 * row["sigmaY"]
+        wx = pixel_size * 2.0 * dataFrame["PSF Sigma X (pix)"][index]
+        wy = pixel_size * 2.0 * dataFrame["PSF Sigma Y (pix)"][index]
+        #print("Index: ", index)
+        #print("wx: ", wx)
+        #print("wy: ", wy)
+        #z_vals[index] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
         z_vals[index] = c_fitz.findBestZ(zfit_data, wx, wy) * 1.0e-3
+        #print("z_vals: ", z_vals[index])
     dataFrame['z'] = z_vals
      #   dataFrame.append(z_vals)
     dataFrame.to_csv('calibrated_zpositions.csv')
@@ -157,12 +166,12 @@ if (__name__ == "__main__"):
 
     wx_params = numpy.load('../daostorm_3d/wx_params_out.npy')
     wy_params = numpy.load('../daostorm_3d/wy_params_out.npy')
-    min_z = ((dataFrame['Frame'] * 0.02) - 0.5)
-    max_z = ((dataFrame['Frame'] * 0.02) + 0.5)
-    z_step = 0.02
+    min_z = ((dataFrame['Frame'].max() * 0.02) - 0.5)
+    max_z = ((dataFrame['Frame'].max() * 0.02) + 0.5)
+    z_step = 0.001
   #  [wx_params, wy_params] = parameters.getWidthParams()
   #  [min_z, max_z] = parameters.getZRange()
-     
+    print("initializing fitzRaw") 
     fitzRaw(args.csv_in,
          (2 * max_z),
          wx_params,
