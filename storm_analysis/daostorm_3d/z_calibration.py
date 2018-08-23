@@ -18,6 +18,7 @@ import copy
 import matplotlib
 import matplotlib.pyplot as pyplot
 import numpy
+import os
 import pandas as pd
 import scipy
 import scipy.optimize
@@ -45,6 +46,8 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
         
     # Load the data.
  #   [wx, wy, z, pixel_size] = loadWxWyZData(hdf5, zoffsets)
+    head, tail = os.path.split(csv_in)
+    savepath = head[1:] + '/'
     dataFrame = pd.read_csv(csv_in)
     wx = dataFrame['sigmaX']
     wy = dataFrame['sigmaY']
@@ -74,8 +77,8 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
     # Print results.
     prettyPrint(wx_params, wy_params, pixel_size)
 
-    numpy.save('wx_params_out.npy', wx_params)
-    numpy.save('wy_params_out.npy', wy_params)
+    numpy.save(savepath+'wx_params_out.npy', wx_params)
+    numpy.save(savepath+'wy_params_out.npy', wy_params)
 
     return [wx_params, wy_params]
 
