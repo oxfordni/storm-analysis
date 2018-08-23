@@ -60,10 +60,12 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
     z = z - 0.5 * numpy.max(z)  
 
     #[wx, wy, z] = dataFrame['sigmaX', 'sigmaY', 'FrameNumber']
+    # TODO pixel_size set by the user    
     pixel_size = 100
     # We use 20 nm steps in the calibration
     
     zrange = (numpy.abs(numpy.min(z)) + numpy.abs(numpy.max(z))) / 2.0
+    
     # Fit curves.
     print("Fitting (round 1).")
     [wx_params, wy_params] = fitDefocusingCurves(wx, wy, z, n_additional = fit_order)
