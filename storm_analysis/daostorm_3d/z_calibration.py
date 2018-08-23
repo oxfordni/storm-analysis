@@ -51,12 +51,18 @@ def calibrate(csv_in, fit_order, outliers, no_plots = False):
     dataFrame = pd.read_csv(csv_in)
     wx = dataFrame['sigmaX']
     wy = dataFrame['sigmaY']
-    z = dataFrame['Frames']
+    try:
+        z = dataFrame['Z (nm)']
+    except:
+        z = dataFrame['Frames']
+        z *= 0.02 
+    
+    z = z - 0.5 * numpy.max(z)  
+
     #[wx, wy, z] = dataFrame['sigmaX', 'sigmaY', 'FrameNumber']
-    pixel_size = 117
+    pixel_size = 100
     # We use 20 nm steps in the calibration
-    z *= 0.02 
-    z = z - 0.5 * numpy.max(z)
+    
     zrange = (numpy.abs(numpy.min(z)) + numpy.abs(numpy.max(z))) / 2.0
     # Fit curves.
     print("Fitting (round 1).")
